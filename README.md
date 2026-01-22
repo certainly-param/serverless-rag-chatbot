@@ -2,6 +2,8 @@
 
 > **Scale-to-Zero RAG Architecture** — A production-ready RAG chatbot that costs **$0/month when idle** and scales instantly. Built with Next.js 16, Gemini, and Upstash.
 
+![Status](https://img.shields.io/badge/status-under%20development-yellow)
+![Version](https://img.shields.io/badge/version-1.0-blue)
 ![GitHub stars](https://img.shields.io/github/stars/certainly-param/serverless-rag-chatbot?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/certainly-param/serverless-rag-chatbot?style=social)
 ![GitHub watchers](https://img.shields.io/github/watchers/certainly-param/serverless-rag-chatbot?style=social)
@@ -14,6 +16,7 @@
 
 ![Serverless RAG Chatbot Demo](documents/ui.png)
 
+> **Note**: This is the first iteration (v1.0) focused on PDF document Q&A. Future versions will expand to support multiple file formats (Word, Markdown, text files), web scraping, and more advanced RAG capabilities.
 
 ## Features
 
