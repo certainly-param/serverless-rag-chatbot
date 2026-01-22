@@ -1,0 +1,57 @@
+{
+  "name": "serverless-rag",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Scale-to-Zero RAG Chatbot - $0/month when idle. Built with Next.js, Gemini, and Upstash.",
+  "author": "Param Chaudhari",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/certainly-param/serverless-rag-chatbot.git"
+  },
+  "keywords": [
+    "rag",
+    "serverless",
+    "nextjs",
+    "gemini",
+    "upstash",
+    "vector-database",
+    "edge-computing",
+    "scale-to-zero",
+    "pdf-parsing",
+    "semantic-caching",
+    "ai-chatbot",
+    "typescript",
+    "react",
+    "vercel",
+    "retrieval-augmented-generation"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.10",
+    "@ai-sdk/react": "^3.0.44",
+    "@upstash/redis": "^1.36.1",
+    "@upstash/semantic-cache": "^1.0.5",
+    "@upstash/vector": "^1.2.2",
+    "ai": "^6.0.42",
+    "next": "16.1.4",
+    "pdfjs-dist": "^5.4.530",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
