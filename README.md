@@ -12,7 +12,7 @@
 [![Gemini](https://img.shields.io/badge/Gemini-2.5--Flash-blue)](https://ai.google.dev)
 [![Upstash](https://img.shields.io/badge/Upstash-Vector%20%7C%20Redis-orange)](https://upstash.com)
 
-![Serverless RAG Chatbot Demo](.documents/ui.png)
+![Serverless RAG Chatbot Demo](documents/ui.png)
 
 
 ## Features
