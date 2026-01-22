@@ -2,11 +2,18 @@
 
 > **Scale-to-Zero RAG Architecture** — A production-ready RAG chatbot that costs **$0/month when idle** and scales instantly. Built with Next.js 16, Gemini, and Upstash.
 
+![GitHub stars](https://img.shields.io/github/stars/certainly-param/serverless-rag-chatbot?style=social)
+![GitHub forks](https://img.shields.io/github/forks/certainly-param/serverless-rag-chatbot?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/certainly-param/serverless-rag-chatbot?style=social)
+
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org)
 [![Vercel AI SDK](https://img.shields.io/badge/AI%20SDK-6-black)](https://ai-sdk.dev)
 [![Gemini](https://img.shields.io/badge/Gemini-2.0--Flash-blue)](https://ai.google.dev)
 [![Upstash](https://img.shields.io/badge/Upstash-Vector%20%7C%20Redis-orange)](https://upstash.com)
+
+![Serverless RAG Chatbot Demo](.documents/ui.png)
+
 
 ## Features
 
