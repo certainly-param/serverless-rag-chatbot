@@ -1,0 +1,10 @@
+# Run the app locally with Docker. Set env in .env.local or below.
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=production

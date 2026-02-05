@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package ingest;
+
+option go_package = "github.com/certainly-param/serverless-rag-chatbot/services/ingest-grpc;ingest";
+
+service IngestService {
+  rpc BulkIngest(BulkIngestRequest) returns (BulkIngestResponse);
+}
+
+message Chunk {
+  string text = 1;
+  int32 page = 2;
+}
+
+message BulkIngestRequest {
+  string source = 1;
+  optional string doc_id = 2;
+  repeated Chunk chunks = 3;
+}
+
+message BulkIngestResponse {
+  bool ok = 1;
+  string doc_id = 2;
+  int32 upserted = 3;
+  string error = 4;
+}

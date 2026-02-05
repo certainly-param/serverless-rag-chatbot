@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package vector;
+
+// Optional Go package hint if you implement the server in Go instead of Node.
+option go_package = "github.com/certainly-param/serverless-rag-chatbot/services/vector-grpc;vector";
+
+// VectorService provides a binary-efficient, schema-safe API for
+// document upsert and similarity search. Internally, the default
+// implementation talks to Upstash Vector over HTTP.
+//
+// NOTE: This proto is intentionally text-centric (query + chunk text)
+// so it works with Upstash's built-in embedding. If you later move
+// to external embeddings (e.g., vLLM + custom encoder), you can
+// extend the messages with explicit `repeated float embedding = N`.
+
+service VectorService {
+  // Upsert a batch of document chunks.
+  rpc UpsertChunks(UpsertChunksRequest) returns (UpsertChunksResponse);
+
+  // Query for the most similar document chunks given a text query.
+  rpc QueryChunks(QueryChunksRequest) returns (QueryChunksResponse);
+}
+
+// Minimal document chunk metadata, aligned with src/lib/retrieval.ts.
+message ChunkMetadata {
+  // "doc" or "cache"
+  string type = 1;
+
+  // Human-readable source identifier (e.g. filename, URL).
+  string source = 2;
+
+  // Page number in the source document (if applicable).
+  int32 page = 3;
+
+  // Logical document identifier (docId from /api/ingest).
+  string doc_id = 4;
+
+  // Semantic cache key in Redis (for type="cache" only).
+  string redis_key = 5;
+}
+
+// A single upsert record.
+message UpsertRecord {
+  // Unique identifier for this chunk (e.g. "doc:<docId>:<index>").
+  string id = 1;
+
+  // Raw text for this chunk. The server will forward this as `data`
+  // to Upstash Vector so it can run built-in embedding.
+  string text = 2;
+
+  // Optional metadata that will be stored alongside the vector.
+  ChunkMetadata metadata = 3;
+}
+
+message UpsertChunksRequest {
+  repeated UpsertRecord records = 1;
+}
+
+message UpsertChunksResponse {
+  // Number of records successfully upserted.
+  int32 upserted = 1;
+
+  // If non-empty, indicates a failure; clients should treat the
+  // upsert as best-effort / partially successful.
+  string error = 2;
+}
+
+// Similarity search request.
+message QueryChunksRequest {
+  // Free-text query. The server forwards this as `data` to Upstash's
+  // `/query` API so Upstash can embed and search.
+  string query = 1;
+
+  // How many top results to return (default 5).
+  int32 top_k = 2;
+
+  // If true, filter to only type="doc" chunks and exclude cache hits.
+  bool docs_only = 3;
+}
+
+// Single query hit.
+message QueryHit {
+  string id = 1;
+  float score = 2;
+
+  // Text of the chunk (from metadata.text in the main app).
+  string text = 3;
+
+  ChunkMetadata metadata = 4;
+}
+
+message QueryChunksResponse {
+  repeated QueryHit hits = 1;
+}
+

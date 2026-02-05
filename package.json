@@ -29,15 +29,25 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "benchmark": "tsx scripts/benchmark.ts",
+    "calculate-costs": "tsx scripts/calculate-costs.ts",
+    "vector-grpc:server": "tsx services/vector-grpc/server.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.10",
     "@ai-sdk/react": "^3.0.44",
+    "@opentelemetry/api": "^1.9.0",
     "@upstash/redis": "^1.36.1",
     "@upstash/semantic-cache": "^1.0.5",
     "@upstash/vector": "^1.2.2",
+    "@vercel/otel": "^2.1.0",
     "ai": "^6.0.42",
+    "@grpc/grpc-js": "^1.11.4",
+    "@grpc/proto-loader": "^0.7.13",
+    "langfuse": "^3.0.0",
     "next": "16.1.4",
     "pdfjs-dist": "^5.4.530",
     "react": "19.2.3",
@@ -52,6 +62,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.21.0",
+    "typescript": "^5",
+    "vitest": "^2.1.0"
   }
 }

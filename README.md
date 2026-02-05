@@ -26,7 +26,11 @@
 - **Semantic Caching**: 30-60% cost reduction via intelligent query caching
 - **Streaming Citations**: Citations stream before the answer for instant transparency
 - **Hybrid Runtime**: Edge for chat, Node.js for ingestion (optimal performance)
+- **Observability**: OpenTelemetry (ingest/retrieval spans), Langfuse (LLM traces, token usage)
+- **CI/CD & Testing**: GitHub Actions (lint, build, test), Vitest unit tests
+- **Docker**: Standalone image + docker-compose for local/self-hosted run
 - **Modern UI**: Beautiful, responsive chat interface with real-time streaming
+- **Optional gRPC Gateway**: Binary-efficient vector upsert/query sidecar (Proto + Node server)
 
 ## Architecture
 
@@ -141,6 +145,10 @@ graph TB
 | **Cache** | Upstash Redis | Semantic caching for cost reduction |
 | **PDF Parsing** | `pdfjs-dist` | Client-side to avoid Edge limits |
 | **UI** | React + `@ai-sdk/react` | Streaming chat with citation support |
+| **Observability** | OpenTelemetry, Langfuse | Traces (ingest/retrieval), LLM generations & token usage |
+| **CI/CD** | GitHub Actions | Lint, build, test on push/PR |
+| **Testing** | Vitest | Unit tests (chunking, observability) |
+| **Containers** | Docker, docker-compose | Local/self-hosted run |
 
 ## Project Structure
 
@@ -157,31 +165,22 @@ serverless-rag/
 │   │   └── page.tsx               # Main chat UI
 │   ├── lib/
 │   │   ├── chunking.ts            # Text chunking utilities
-│   │   ├── retrieval.ts           # Vector search & cache logic
-│   │   └── upstash.ts             # Upstash client initialization
-│   └── proxy.ts                   # Semantic cache proxy
+│   │   ├── observability.ts      # OpenTelemetry spans (Node)
+│   │   ├── retrieval.ts          # Vector search & cache logic
+│   │   └── upstash.ts            # Upstash client initialization
+│   ├── instrumentation.ts        # Next.js OTel registration
+│   └── proxy.ts                  # Semantic cache proxy
+├── .github/workflows/ci.yml      # CI: lint, build, test
+├── services/vector-grpc/         # Optional gRPC vector gateway (proto + Node server)
+├── services/ingest-grpc/         # Optional gRPC bulk-ingest proto & design
 ├── public/
-│   └── pdf.worker.min.mjs         # PDF.js worker (static asset)
-└── env.example                    # Environment variable template
+│   └── pdf.worker.min.mjs        # PDF.js worker (static asset)
+├── Dockerfile                    # Standalone image
+├── docker-compose.yml            # Local run with env
+└── env.example                   # Environment variable template
 ```
 
 ## Key Design Decisions
-
-### Why Gemini 2.0 Flash by Default?
-
-**The Scale-to-Zero Constraint:**
-The project's core value proposition is "$0/month when idle." This dictates every architectural decision, including model choice.
-
-- **Cost Efficiency**: At $0.10 per 1M input tokens vs $1.25 for Pro (12.5x cheaper), Flash models align with our scale-to-zero philosophy
-- **Speed**: Lower latency is crucial for streaming chat experiences
-- **RAG Sufficiency**: In RAG pipelines, intelligence is split between retrieval (Upstash Vector) and synthesis (LLM). Flash excels at synthesis, it doesn't need to know everything; it just needs to read retrieved chunks and summarize them effectively
-- **Massive Context Window**: 1M tokens means you can feed significantly more retrieved chunks, reducing the risk of missing information
-
-### Why Client-Side PDF Parsing?
-
-- **Edge Runtime Limits**: Vercel Edge has 1MB bundle size limits and strict CPU time constraints
-- **Cost Efficiency**: Offloads parsing to user's browser (zero server cost)
-- **Reliability**: Avoids "Module not found: fs" errors common in serverless RAG apps
 
 ### Why Upstash Over Pinecone?
 
@@ -207,6 +206,24 @@ The app will automatically:
 - Use Edge runtime for `/api/chat`
 - Use Node.js runtime for `/api/ingest`
 - Serve static assets (including PDF.js worker) from CDN
+
+### Optional: Run the gRPC Vector Gateway
+
+For internal services that prefer gRPC/Protobuf over HTTP+JSON, this repo includes a small vector gateway:
+
+- Proto: `services/vector-grpc/vector.proto` (`VectorService` with `UpsertChunks` and `QueryChunks`)
+- Server: `services/vector-grpc/server.ts` (Node.js, wraps Upstash Vector over HTTP)
+
+To run it locally:
+
+```bash
+UPSTASH_VECTOR_REST_URL=... \
+UPSTASH_VECTOR_REST_TOKEN=... \
+VECTOR_GRPC_PORT=50051 \
+npm run vector-grpc:server
+```
+
+This starts a gRPC server exposing a binary-efficient, schema-safe API for document upsert and similarity search. You can point other backend services or batch jobs at this endpoint instead of calling `/api/ingest` or Upstash HTTP directly.
 
 ## Cost Analysis
 
@@ -252,4 +269,4 @@ If this project helped you, please consider giving it a star! ⭐
 
 ---
 
-**Built with ❤️ for the serverless community**
+**Built for the serverless community while drinking a lot of 🧃**

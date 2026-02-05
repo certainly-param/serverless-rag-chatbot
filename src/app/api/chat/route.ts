@@ -11,13 +11,27 @@ import { queryDocs } from "@/lib/retrieval";
 
 export const runtime = "edge";
 
-// Configurable model: default to 2.5 Flash (free tier compatible, better quality)
-// Options: "gemini-2.5-flash" (default, free tier, 10 RPM/250 RPD), "gemini-2.5-flash-lite" (free tier, 15 RPM/1,000 RPD), "gemini-2.0-flash-lite" (free tier, 30 RPM), "gemini-2.5-pro" (best quality, higher cost)
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 export async function POST(req: Request) {
   const body = (await req.json()) as { messages?: unknown[] };
   const { messages } = body;
+
+  let langfuse: InstanceType<typeof import("langfuse").Langfuse> | null = null;
+  let trace: ReturnType<InstanceType<typeof import("langfuse").Langfuse>["trace"]> | null = null;
+  if (process.env.LANGFUSE_SECRET_KEY) {
+    try {
+      const { Langfuse } = await import("langfuse");
+      langfuse = new Langfuse({
+        secretKey: process.env.LANGFUSE_SECRET_KEY,
+        publicKey: process.env.LANGFUSE_PUBLIC_KEY ?? "",
+        baseUrl: process.env.LANGFUSE_BASE_URL ?? "https://cloud.langfuse.com",
+      });
+      trace = langfuse.trace({ name: "rag-chat", metadata: { model: GEMINI_MODEL } });
+    } catch {
+      // Observability optional
+    }
+  }
 
   // AI SDK v6 messages can have content as string, parts array, or content array
   const last = messages?.[messages.length - 1] as 
@@ -154,11 +168,23 @@ export async function POST(req: Request) {
           : "CRITICAL: No context chunks were retrieved, but the user has uploaded a PDF document (86 vectors were created). This indicates a retrieval issue. However, you should still try to answer based on the conversation. If the user asks about accessing the PDF, explain that the document was uploaded and processed, but there may be a temporary retrieval issue. Ask them to try re-uploading or rephrasing their question.",
       ].join("\n");
 
+      const generation = trace?.generation({
+        name: "rag-answer",
+        input: query,
+        model: GEMINI_MODEL,
+        metadata: { chunksRetrieved: retrieved.length },
+      });
+
       const result = streamText({
         model: google(GEMINI_MODEL),
         messages: await convertToModelMessages(messages as Parameters<typeof convertToModelMessages>[0]),
         system,
         onFinish: async ({ text }) => {
+          if (generation && text) {
+            generation.end({ output: text });
+            trace?.update({ output: text });
+            langfuse?.flushAsync?.();
+          }
           if (!query || !text) return;
 
           try {
@@ -177,10 +203,9 @@ export async function POST(req: Request) {
               })),
             });
 
-            // Use Upstash's built-in embedding via `data` parameter
             await index.upsert({
               id: `cache:${cacheId}`,
-              data: query, // Upstash will embed this automatically
+              data: query,
               metadata: { type: "cache", redisKey },
             });
           } catch {
